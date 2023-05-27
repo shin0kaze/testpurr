@@ -1,0 +1,45 @@
+:root {
+    --main-color: rgb(66, 138, 221);
+    --ol-color:rgb(29, 98, 177);
+}
+
+.slider {
+    width: 600px;
+    border: solid 1px #000;
+}
+
+.slider__image {
+    height: 380px;
+    width: 600px;
+}
+
+.slider__panel {
+    display: flex;
+    justify-content: space-between;
+}
+
+.slider__button {
+    height: 40px;
+    width: 40px;
+    font-size: 24pt;
+    font-weight: bold;
+    text-align: center;
+    color:var(--main-color);
+    border: solid 2px var(--main-color);
+    border-radius: 4px;
+}
+
+.slider__slides {
+    height: 40px;
+    width: 40px;
+    border: solid 2px var(--main-color);
+}
+
+.slider__new-image {
+    height: 380px;
+    width: 600px;
+}
+
+.slider__new-image_hidden {
+    display: none;
+}
