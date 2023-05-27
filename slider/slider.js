@@ -1,25 +1,12 @@
 
-export default function slider(parent, images) {
-    if (parent && images && images.length > 0 && images.length < 11) return
-
-    const lock = function() {
-            const locked_old = locked
-            locked = true
-            return locked_old
-        }, 
-        free = function() { locked = false },
-        notify = function(msg) { console.log('msg') }
-
-    let locked = false,
-        current = 0
-
+export default function slider(parent, length) {
     const slider = document.createElement('div'),
         sliderImage = document.createElement('img'),
         sliderNewImage = document.createElement('img'),
-        prevBtn = sliderButton(false, () => notify('prev')),
-        nextBtn = sliderButton(true, () => notify('next')),
+        prevBtn = sliderButton(false),
+        nextBtn = sliderButton(true),
         sliderPanel = document.createElement('div'),
-        sliderSlides = sliderSlidesCollection()
+        sliderSlides = sliderSlidesCollection(length)
 
     slider.className = 'slider'
     slider.appendChild(sliderImage)
@@ -32,30 +19,78 @@ export default function slider(parent, images) {
     sliderPanel.appendChild(prevBtn)
     sliderPanel.appendChild(sliderSlides)
     sliderPanel.appendChild(nextBtn)
-    sliderSlides.className = 'slider__slides'
     parent.appendChild(slider)
+    sliderInit(length, sliderImage, sliderNewImage, nextBtn, prevBtn, sliderSlides)
 }
 
-function sliderButton(isDirNext, onClick) {
+function sliderInit(length, image, newImage, nextBtn, prevBtn, slidesColl) {
+    let locked = false,
+        current = 0
+    const slides = slidesColl.childNodes,
+        selectSlide = function(index) {
+        slides[current].classList.toggle('slider__slides-item_selected', false)
+        slides[index].classList.toggle('slider__slides-item_selected', true)
+        current = index
+        image.style.backgroundImage = `url(/img/${current+1}.png)`
+        },
+        animate = function(index, fromLeft=false) {
+            if (locked === false) {
+                locked = true
+                
+                const duration = 500,
+                    framesPerSec = 60,
+                    frameDuraion = Math.round(1000/60),
+                    imageWidth = fromLeft? -600 : 600,
+                    offsetPerTick = imageWidth/(framesPerSec * duration / 1000.0)
+                
+                console.log(offsetPerTick)
+
+                let leftOffset = imageWidth
+
+                newImage.style.left = `${leftOffset}px`
+                newImage.classList.remove('slider__new-image_hidden')
+                newImage.style.backgroundImage = `url(/img/${index+1}.png)`        
+
+                const animation = setInterval(() => {
+                    leftOffset -= offsetPerTick
+                    if (!(leftOffset < 0 ^ !fromLeft)) {
+                        leftOffset = 0
+                        clearInterval(animation)
+                        selectSlide(index)
+                        newImage.classList.add('slider__new-image_hidden')
+                        locked = false
+                    }
+                    newImage.style.left = `${leftOffset}px`
+                }, frameDuraion)
+            }
+        }
+
+    nextBtn.addEventListener('click', function() {animate(current+1 >= length? 0 : current+1)})
+    prevBtn.addEventListener('click', function() {animate(current-1 < 0? length-1 : current-1, true)})
+    for(let i=0; i < slides.length; i++) {
+        slides[i].addEventListener('click', () => {
+            if (locked === false) selectSlide(i)})
+    }
+    slides[0].classList.add('slider__slides-item_selected') 
+}
+
+function sliderButton(isDirNext) {
     const sliderBtn = document.createElement('div')
     sliderBtn.className = 'slider__button'
-    sliderBtn.onclick = onClick
     sliderBtn.innerText = isDirNext ? '>' : '<'
     return sliderBtn
 }
 
-function sliderSlidesCollection() {
-    return document.createElement('div')
-}
-
-
-// function handleSliderClicks(images, lock) {
-//     let current = 0
-//     const next = function() {
-//         if lock() return current++ < 10 ? current++ : 0
-//     }
-//     const prev = function() {
-//         if lock() return current-- > 0 ? current-- : 9
-//     }
-//     return [prev, next];
-// }
+function sliderSlidesCollection(length) {
+    const slides = document.createElement('ul')
+    slides.className = 'slider__slides'
+    for (let i = 0; i < length; i++) {
+        const slide = document.createElement('li')
+        slide.className = 'slider__slides-item'
+        const slideCircle = document.createElement('div')
+        slideCircle.className = 'slider__slides-item-circle'
+        slides.appendChild(slide)
+        slide.appendChild(slideCircle)
+    }
+    return slides
+}      
